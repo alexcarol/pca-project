@@ -61,63 +61,63 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 /* The structures comprising a Structure (representation of an organic molecule in 3D) */
 
-struct Atom{
-	int		serial ;
-	char		atom_name[5] ;
-	float		coord[4] ;
-	float		occupancy ;
-	float		temp_factor ;
-	float		charge ;
-} ;
+struct Atom {
+	int serial;
+	char atom_name[5];
+	float coord[4];
+	float occupancy;
+	float temp_factor;
+	float charge;
+};
 
-struct Amino_Acid{	
-	char		res_name[4] ;
-	char		chainID[2] ;
-	char		res_seq_plus_iCode[6] ;
-	char		olc[2] ;
-	int		nc ;
-	int		size ;
-	struct Atom	*Atom ;
-} ;
+struct Amino_Acid {
+	char res_name[4];
+	char chainID[2];
+	char res_seq_plus_iCode[6];
+	char olc[2];
+	int nc;
+	int size;
+	struct Atom *Atom;
+};
 
-struct Structure{
-	char			ident[256] ;
-	int			length ;
-	struct Amino_Acid	*Residue ;	
-} ;
+struct Structure {
+	char ident[256];
+	int length;
+	struct Amino_Acid *Residue;
+};
 
 /************/
 
 /* Angles structure */
 
-struct Angle{
-	int	n ;
-	int	*z_twist ;
-	int	*theta ;
-	int	*phi ;
-} ;
+struct Angle {
+	int n;
+	int *z_twist;
+	int *theta;
+	int *phi;
+};
 
 /************/
 
 /* Score structure */
 
-struct Score{
-	int	score ;
-	int	coord[4] ;
-        int	angle[4] ;
-        float	rpscore ;
-        int	extra ;
-} ;
+struct Score {
+	int score;
+	int coord[4];
+	int angle[4];
+	float rpscore;
+	int extra;
+};
 
 /************/
 
 /* Matrix Structure */
 
-struct Matrix{
-	char	description[100] ;
-	float	distance ;
-	float	score[21][21] ;
-} ;
+struct Matrix {
+	char description[100];
+	float distance;
+	float score[21][21];
+};
 
 /************/
 
@@ -129,38 +129,31 @@ struct Matrix{
 
 /************/
 
-extern struct Structure read_pdb_to_structure( char *pdb_file_name ) ;
-extern void write_structure_to_pdb( struct Structure This_Structure , char *pdb_file_name ) ;
-extern struct Structure duplicate_structure( struct Structure This_Structure ) ;
-extern struct Structure translate_structure( struct Structure This_Structure , float x_shift , float y_shift , float z_shift ) ;
-extern struct Structure translate_structure_onto_origin( struct Structure This_Structure ) ;
-extern struct Structure rotate_structure( struct Structure This_Structure , int z_twist , int theta , int phi ) ;
-extern struct Structure merge_structures( struct Structure Structure_One , struct Structure Structure_Two ) ;
-extern float radius_of_structure( struct Structure This_Structure ) ;
-extern float total_span_of_structures( struct Structure Structure_1 , struct Structure Structure_2 ) ;
+extern struct Structure read_pdb_to_structure(char *pdb_file_name);
+extern void write_structure_to_pdb(struct Structure This_Structure, char *pdb_file_name);
+extern struct Structure duplicate_structure(struct Structure This_Structure);
+extern struct Structure translate_structure(struct Structure This_Structure, float x_shift, float y_shift, float z_shift);
+extern struct Structure translate_structure_onto_origin(struct Structure This_Structure);
+extern struct Structure rotate_structure(struct Structure This_Structure, int z_twist, int theta, int phi);
+extern struct Structure merge_structures(struct Structure Structure_One, struct Structure Structure_Two);
+extern float radius_of_structure(struct Structure This_Structure);
+extern float total_span_of_structures(struct Structure Structure_1, struct Structure Structure_2);
 
-extern struct Angle generate_global_angles( int angle_step ) ;
-extern struct Angle generate_range_of_angles( int angle_step , int angle_range , int z_twist , int theta , int phi ) ;
+extern struct Angle generate_global_angles(int angle_step);
+extern struct Angle generate_range_of_angles(int angle_step, int angle_range, int z_twist, int theta, int phi);
 
-extern int gord( float position , float grid_span , int grid_size ) ;
-extern float pythagoras( float x1 , float y1 , float z1 , float x2 , float y2 , float z2 ) ;
+extern int gord(float position, float grid_span, int grid_size);
+extern float pythagoras(float x1, float y1, float z1, float x2, float y2, float z2);
 
-extern void discretise_structure( struct Structure This_Structure , float grid_span , int grid_size , fftw_real *grid ) ;
-extern void surface_grid( float grid_span , int grid_size , fftw_real *grid , float surface , float internal_value ) ;
+extern void discretise_structure(struct Structure This_Structure, float grid_span, int grid_size, fftw_real * grid);
+extern void surface_grid(float grid_span, int grid_size, fftw_real * grid, float surface, float internal_value);
 
-extern void assign_charges( struct Structure This_Structure ) ;
-extern void electric_field( struct Structure This_Structure , float grid_span , int grid_size , fftw_real *grid ) ;
-extern void electric_point_charge( struct Structure This_Structure , float grid_span , int grid_size , fftw_real *grid ) ;
-extern void electric_field_zero_core( int grid_size , fftw_real *elec_grid , fftw_real *surface_grid , float internal_value ) ;
+extern void assign_charges(struct Structure This_Structure);
+extern void electric_field(struct Structure This_Structure, float grid_span, int grid_size, fftw_real * grid);
+extern void electric_point_charge(struct Structure This_Structure, float grid_span, int grid_size, fftw_real * grid);
+extern void electric_field_zero_core(int grid_size, fftw_real * elec_grid, fftw_real * surface_grid, float internal_value);
 
-extern void qsort_scores( struct Score *Scores , int left , int right ) ;
-extern void qsort_rpscores( struct Score *Scores , int left , int right ) ;
+extern void qsort_scores(struct Score *Scores, int left, int right);
+extern void qsort_rpscores(struct Score *Scores, int left, int right);
 
-extern int numerical_sort( const void *a , const void *b ) ;
-
-
-
-
-
-
-
+extern int numerical_sort(const void *a, const void *b);

@@ -32,164 +32,168 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 /************/
 
-int numerical_sort( const void *a , const void *b ){
-  return a > b ;
+int numerical_sort(const void *a, const void *b)
+{
+	return a > b;
 }
 
 /************/
 
-void qsort_scores( struct Score *Scores , int left , int right ) {
+void qsort_scores(struct Score *Scores, int left, int right)
+{
 
-  /* Variables */
+	/* Variables */
 
-  int	i , last ;
+	int i, last;
 
-  /* Sub function */
+	/* Sub function */
 
-  void swap( struct Score *Scores , int i , int j ) ;
+	void swap(struct Score *Scores, int i, int j);
 
+	/* Neat code */
 
-  /* Neat code */
+	if (left >= right)
+		return;		/* have nothing to sort */
 
-  if( left >= right ) return ;	/* have nothing to sort */
+	swap(Scores, left, (left + right) / 2);
 
-  swap( Scores , left , ( left + right ) / 2 ) ;
+	last = left;
 
-  last = left ;
+	for (i = left + 1; i <= right; i++) {
 
-  for( i = left + 1 ; i <= right ; i ++ ) {
+		if (Scores[i].score > Scores[left].score) {
 
-    if( Scores[i].score > Scores[left].score ) {
+			swap(Scores, ++last, i);
 
-      swap( Scores , ++ last , i ) ;
+		} else {
 
-    } else {
+			if (Scores[i].score == Scores[left].score) {
 
-      if( Scores[i].score == Scores[left].score ) {
+				if (Scores[i].coord[1] > Scores[left].coord[1]) {
 
-        if( Scores[i].coord[1] > Scores[left].coord[1] ) {
+					swap(Scores, ++last, i);
 
-          swap( Scores , ++ last , i ) ;
+				} else {
 
-        } else {
+					if (Scores[i].coord[1] == Scores[left].coord[1]) {
 
-          if( Scores[i].coord[1] == Scores[left].coord[1] ) {
+						if (Scores[i].coord[2] > Scores[left].coord[2]) {
 
-            if( Scores[i].coord[2] > Scores[left].coord[2] ) {
+							swap(Scores, ++last, i);
 
-              swap( Scores , ++ last , i ) ;
+						} else {
 
-            } else {
+							if (Scores[i].coord[2] == Scores[left].coord[2]) {
 
-              if( Scores[i].coord[2] == Scores[left].coord[2] ) {
+								if (Scores[i].coord[3] > Scores[left].coord[3]) {
 
-                if( Scores[i].coord[3] > Scores[left].coord[3] ) {
+									swap(Scores, ++last, i);
 
-                  swap( Scores , ++ last , i ) ;
+								} else {
 
-                } else {
+									if (Scores[i].coord[3] == Scores[left].coord[3]) {
 
-                  if( Scores[i].coord[3] == Scores[left].coord[3] ) {
+										if (Scores[i].angle[1] > Scores[left].angle[1]) {
 
-                    if( Scores[i].angle[1] > Scores[left].angle[1] ) {
+											swap(Scores, ++last, i);
 
-                      swap( Scores , ++ last , i ) ;
+										} else {
 
-                    } else {
+											if (Scores[i].angle[1] == Scores[left].angle[1]) {
 
-                      if( Scores[i].angle[1] == Scores[left].angle[1] ) {
+												if (Scores[i].angle[2] > Scores[left].angle[2]) {
 
-                        if( Scores[i].angle[2] > Scores[left].angle[2] ) {
+													swap(Scores, ++last, i);
 
-                          swap( Scores , ++ last , i ) ;
+												} else {
 
-                        } else {
+													if (Scores[i].angle[2] == Scores[left].angle[2]) {
 
-                          if( Scores[i].angle[2] == Scores[left].angle[2] ) {
+														if (Scores[i].angle[3] > Scores[left].angle[3]) {
 
-                            if( Scores[i].angle[3] > Scores[left].angle[3] ) {
+															swap(Scores, ++last, i);
 
-                              swap( Scores , ++ last , i ) ;
+														}
 
-                            }
+													}
 
-                          }
+												}
 
-                        }
+											}
 
-                      }
+										}
 
-                    }
+									}
 
-                  }
+								}
 
-                }
+							}
 
-              }
+						}
 
-            }
+					}
 
-          }
+				}
 
-        }
+			}
 
-      }
+		}
 
-    }
+	}
 
-  }
+	swap(Scores, left, last);
 
-  swap( Scores , left , last ) ;
+	qsort_scores(Scores, left, last - 1);
 
-  qsort_scores( Scores , left , last - 1 ) ;
-
-  qsort_scores( Scores , last + 1 , right ) ;
-
-}
-
-/************/
-
-void qsort_rpscores( struct Score *Scores , int left , int right ) {
-
-  /* Variables */
-
-  int	i , last ;
-
-  /* Sub function */
-
-  void swap( struct Score *Scores , int i , int j ) ;
-
-
-  /* Neat code */
-
-  if( left >= right ) return ;	/* have nothing to sort */
-
-  swap( Scores , left , ( left + right ) / 2 ) ;
-
-  last = left ;
-
-  for( i = left + 1 ; i <= right ; i ++ )
-
-    if( Scores[i].rpscore > Scores[left].rpscore ) 
-
-       swap( Scores , ++ last , i ) ;
-
-  swap( Scores , left , last ) ;
-
-  qsort_rpscores( Scores , left , last - 1 ) ;
-
-  qsort_rpscores( Scores , last + 1 , right ) ;
+	qsort_scores(Scores, last + 1, right);
 
 }
 
 /************/
 
-void swap( struct Score *Scores , int i , int j ) {
+void qsort_rpscores(struct Score *Scores, int left, int right)
+{
 
-  struct Score	Temp ;
+	/* Variables */
 
-  Temp = Scores[i] ;
-  Scores[i] = Scores[j] ;
-  Scores[j] = Temp ;
+	int i, last;
+
+	/* Sub function */
+
+	void swap(struct Score *Scores, int i, int j);
+
+	/* Neat code */
+
+	if (left >= right)
+		return;		/* have nothing to sort */
+
+	swap(Scores, left, (left + right) / 2);
+
+	last = left;
+
+	for (i = left + 1; i <= right; i++)
+
+		if (Scores[i].rpscore > Scores[left].rpscore)
+
+			swap(Scores, ++last, i);
+
+	swap(Scores, left, last);
+
+	qsort_rpscores(Scores, left, last - 1);
+
+	qsort_rpscores(Scores, last + 1, right);
+
+}
+
+/************/
+
+void swap(struct Score *Scores, int i, int j)
+{
+
+	struct Score Temp;
+
+	Temp = Scores[i];
+	Scores[i] = Scores[j];
+	Scores[j] = Temp;
 
 }
