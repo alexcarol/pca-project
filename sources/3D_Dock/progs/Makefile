@@ -12,7 +12,7 @@
 
 # This line you will definitely have to edit
 
-FFTW_DIR        = $(HOME)/fftw-2.1.3/installation
+FFTW_DIR        = /usr/local/lib/fftw-2.1.3
 
 #############
 
@@ -24,7 +24,7 @@ SHELL           = /bin/sh
 
 CC              = gcc
 
-CC_FLAGS        = -O3 -march=pentium4 -g -static 
+CC_FLAGS        = -O3 -march=corei7 -g -static 
 STRIP           = strip
 
 CC_LINKERS      = -lm

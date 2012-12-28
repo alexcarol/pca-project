@@ -20,7 +20,7 @@ SHELL = /bin/sh
 
 srcdir = .
 top_srcdir = ..
-prefix = /home/alex/fib/pca-project/sources/fftw-2.1.3/installation
+prefix = /usr/local/lib/fftw-2.1.3/
 exec_prefix = ${prefix}
 
 bindir = ${exec_prefix}/bin
@@ -44,9 +44,9 @@ pkgincludedir = $(includedir)/fftw
 
 top_builddir = ..
 
-ACLOCAL = aclocal
-AUTOCONF = autoconf
-AUTOMAKE = automake
+ACLOCAL = /home/hito/UPC/PCA/proyecto/pca-project/sources/fftw-2.1.3/missing aclocal
+AUTOCONF = /home/hito/UPC/PCA/proyecto/pca-project/sources/fftw-2.1.3/missing autoconf
+AUTOMAKE = /home/hito/UPC/PCA/proyecto/pca-project/sources/fftw-2.1.3/missing automake
 
 INSTALL = /usr/bin/install -c
 INSTALL_PROGRAM = ${INSTALL} $(AM_INSTALL_PROGRAM_FLAGS)
@@ -60,12 +60,12 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-host_alias = i686-pc-linux-gnu
-host_triplet = i686-pc-linux-gnu
+host_alias = x86_64-unknown-linux-gnu
+host_triplet = x86_64-unknown-pc-linux-gnu
 AS = @AS@
 CCthreads = 
 DLLTOOL = @DLLTOOL@
-F77 = 
+F77 = f77
 FFTW_MPI_INCLUDELIST = 
 FFTW_MPI_LIBLIST = 
 FFTW_MPI_PROGLIST = 
@@ -77,7 +77,7 @@ FLIBS =
 LD = /usr/bin/ld
 LIBTOOL = $(SHELL) $(top_builddir)/libtool
 LN_S = ln -s
-MAKEINFO = /home/alex/fib/pca-project/sources/fftw-2.1.3/missing makeinfo
+MAKEINFO = /home/hito/UPC/PCA/proyecto/pca-project/sources/fftw-2.1.3/missing makeinfo
 MPICC = gcc
 MPILIBS = 
 NM = /usr/bin/nm -B

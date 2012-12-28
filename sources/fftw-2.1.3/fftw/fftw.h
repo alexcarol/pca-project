@@ -37,7 +37,7 @@ extern "C" {
  * If you can, use configure --enable-float instead of changing this
  * flag directly 
  */
-#define FFTW_ENABLE_FLOAT 1
+/* #undef FFTW_ENABLE_FLOAT */
 
 /* our real numbers */
 #ifdef FFTW_ENABLE_FLOAT

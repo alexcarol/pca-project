@@ -14,6 +14,7 @@
 #
 ac_cv_c_const=${ac_cv_c_const='yes'}
 ac_cv_exeext=${ac_cv_exeext='no'}
+ac_cv_flibs=${ac_cv_flibs=''}
 ac_cv_func_BSDgettimeofday=${ac_cv_func_BSDgettimeofday='no'}
 ac_cv_func_alloca_works=${ac_cv_func_alloca_works='yes'}
 ac_cv_func_gethrtime=${ac_cv_func_gethrtime='no'}
@@ -33,12 +34,16 @@ ac_cv_path_NM=${ac_cv_path_NM='/usr/bin/nm -B'}
 ac_cv_path_install=${ac_cv_path_install='/usr/bin/install -c'}
 ac_cv_prog_CC=${ac_cv_prog_CC='cc'}
 ac_cv_prog_CPP=${ac_cv_prog_CPP='gcc -E'}
+ac_cv_prog_F77=${ac_cv_prog_F77='f77'}
 ac_cv_prog_LN_S=${ac_cv_prog_LN_S='ln -s'}
 ac_cv_prog_PERL=${ac_cv_prog_PERL='perl'}
 ac_cv_prog_RANLIB=${ac_cv_prog_RANLIB='ranlib'}
 ac_cv_prog_cc_cross=${ac_cv_prog_cc_cross='no'}
 ac_cv_prog_cc_g=${ac_cv_prog_cc_g='yes'}
 ac_cv_prog_cc_works=${ac_cv_prog_cc_works='yes'}
+ac_cv_prog_f77_cross=${ac_cv_prog_f77_cross='no'}
+ac_cv_prog_f77_works=${ac_cv_prog_f77_works='yes'}
+ac_cv_prog_g77=${ac_cv_prog_g77='no'}
 ac_cv_prog_gcc=${ac_cv_prog_gcc='yes'}
 ac_cv_prog_gcc_2_90=${ac_cv_prog_gcc_2_90='yes'}
 ac_cv_prog_gnu_ld=${ac_cv_prog_gnu_ld='yes'}

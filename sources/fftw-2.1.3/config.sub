@@ -849,6 +849,10 @@ case $basic_machine in
 		basic_machine=c4x-none
 		os=-coff
 		;;
+	# Añadido para soportar PC's de 64 bits
+	x86_64*)
+		basic_machine=$basic_machine-pc
+		;;
 	*)
 		echo Invalid configuration \`$1\': machine \`$basic_machine\' not recognized 1>&2
 		exit 1

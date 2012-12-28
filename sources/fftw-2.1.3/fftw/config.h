@@ -156,12 +156,12 @@
    Fortran wrappers will not be compiled. */
 
 /* #undef FFTW_FORTRANIZE_LOWERCASE */
-/* #undef FFTW_FORTRANIZE_LOWERCASE_UNDERSCORE */
+#define FFTW_FORTRANIZE_LOWERCASE_UNDERSCORE 1
 /* #undef FFTW_FORTRANIZE_UPPERCASE */
 /* #undef FFTW_FORTRANIZE_UPPERCASE_UNDERSCORE */
 
 /* define the following if names with an underscore get an extra one: */
-/* #undef FFTW_FORTRANIZE_EXTRA_UNDERSCORE */
+#define FFTW_FORTRANIZE_EXTRA_UNDERSCORE 1
 
 /* The following symbols control how MPI_Comm data structures are
    translated between Fortran and C for the fftw_mpi wrappers.  See

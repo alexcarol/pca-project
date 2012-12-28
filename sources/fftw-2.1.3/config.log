@@ -49,126 +49,53 @@ ltconfig:1596: eval "/usr/bin/nm -B conftest.o | sed -n -e 's/^.*[ 	]\([ABCDGIST
 ltconfig:1648: gcc -o conftest -g -O2 -fno-builtin   conftest.c conftstm.o 1>&5
 configure:1813: checking for perl
 configure:1849: checking for f77
-configure:1849: checking for xlf
-configure:1849: checking for xlf77
-configure:1849: checking for cf77
-configure:1849: checking for fl32
-configure:1849: checking for g77
-configure:1849: checking for fort77
-configure:1849: checking for f90
-configure:1849: checking for xlf90
+configure:1924: checking whether the Fortran 77 compiler (f77  ) works
+configure:1937: f77 -o conftest   conftest.f  1>&5
+   MAIN conftest:
+configure:1963: checking whether the Fortran 77 compiler (f77  ) is a cross-compiler
+configure:1968: checking whether we are using GNU Fortran 77
+configure:2023: checking for Fortran 77 libraries
+configure:2182: checking how f77 mangles function names
+configure:2192: f77 -c -g mangle-func.f 1>&5
+   foobar:
+   foo_bar:
+configure:2220: gcc -o conftest -g -O2   conftest.c mangle-func.o   1>&5
+/tmp/cc2wXks6.o: In function `main':
+/home/hito/UPC/PCA/proyecto/pca-project/sources/fftw-2.1.3/configure:2216: undefined reference to `foobar'
+collect2: error: ld returned 1 exit status
+configure: failed program was:
+#line 2213 "configure"
+#include "confdefs.h"
+
+int main() {
+foobar();
+; return 0; }
+configure:2235: gcc -o conftest -g -O2   conftest.c mangle-func.o   1>&5
+configure:2322: checking if f77 functions with an underscore get an extra underscore
+configure:2342: gcc -o conftest -g -O2   conftest.c mangle-func.o   1>&5
 configure:2444: checking whether gcc accepts -malign-double
 configure:2471: checking whether gcc accepts -fstrict-aliasing
-configure:2554: checking whether gcc accepts -mcpu=pentiumpro
-configure:2577: checking whether gcc accepts -mpentiumpro
 configure:2769: checking whether gcc accepts -O6 -fomit-frame-pointer -Wall -W -Wcast-qual -Wpointer-arith -Wcast-align -pedantic -fno-schedule-insns -fschedule-insns2 -malign-double -fstrict-aliasing
 configure:2812: checking whether gcc accepts -mpreferred-stack-boundary=4
 configure:2837: checking whether the stack is correctly aligned by gcc
 configure:2857: gcc -o conftest -O -malign-double   conftest.c  1>&5
 configure:2922: checking for sqrt in -lm
-configure:2941: gcc -o conftest -O6 -fomit-frame-pointer -Wall -W -Wcast-qual -Wpointer-arith -Wcast-align -pedantic -fno-schedule-insns -fschedule-insns2 -malign-double -fstrict-aliasing   conftest.c -lm   1>&5
-configure:2934:6: warning: conflicting types for built-in function 'sqrt' [enabled by default]
 configure:2970: checking how to run the C preprocessor
-configure:2991: gcc -E  conftest.c >/dev/null 2>conftest.out
 configure:3050: checking for ANSI C header files
-configure:3063: gcc -E  conftest.c >/dev/null 2>conftest.out
-configure:3130: gcc -o conftest -O6 -fomit-frame-pointer -Wall -W -Wcast-qual -Wpointer-arith -Wcast-align -pedantic -fno-schedule-insns -fschedule-insns2 -malign-double -fstrict-aliasing   conftest.c -lm  1>&5
-configure: In function 'main':
-configure:3125:1: warning: implicit declaration of function 'exit' [-Wimplicit-function-declaration]
-configure:3125:67: warning: incompatible implicit declaration of built-in function 'exit' [enabled by default]
 configure:3157: checking for sys/time.h
-configure:3167: gcc -E  conftest.c >/dev/null 2>conftest.out
 configure:3157: checking for unistd.h
-configure:3167: gcc -E  conftest.c >/dev/null 2>conftest.out
 configure:3157: checking for getopt.h
-configure:3167: gcc -E  conftest.c >/dev/null 2>conftest.out
 configure:3157: checking for malloc.h
-configure:3167: gcc -E  conftest.c >/dev/null 2>conftest.out
 configure:3195: checking for working const
-configure:3249: gcc -c -O6 -fomit-frame-pointer -Wall -W -Wcast-qual -Wpointer-arith -Wcast-align -pedantic -fno-schedule-insns -fschedule-insns2 -malign-double -fstrict-aliasing  conftest.c 1>&5
-configure: In function 'main':
-configure:3219:5: warning: cast discards '__attribute__((const))' qualifier from pointer target type [-Wcast-qual]
-configure:3223:15: warning: unused variable 's' [-Wunused-variable]
-configure:3243:13: warning: unused variable 'foo' [-Wunused-variable]
-configure:3211:27: warning: unused variable 'zero' [-Wunused-variable]
-configure:3205:39: warning: unused variable 'x' [-Wunused-variable]
-configure:3225:8: warning: 't' is used uninitialized in this function [-Wuninitialized]
-configure:3240:21: warning: 'b' is used uninitialized in this function [-Wuninitialized]
 configure:3270: checking for size_t
 configure:3303: checking whether time.h and sys/time.h may both be included
-configure:3317: gcc -c -O6 -fomit-frame-pointer -Wall -W -Wcast-qual -Wpointer-arith -Wcast-align -pedantic -fno-schedule-insns -fschedule-insns2 -malign-double -fstrict-aliasing  conftest.c 1>&5
-configure: In function 'main':
-configure:3313:12: warning: unused variable 'tp' [-Wunused-variable]
 configure:3355: checking for working alloca.h
-configure:3367: gcc -o conftest -O6 -fomit-frame-pointer -Wall -W -Wcast-qual -Wpointer-arith -Wcast-align -pedantic -fno-schedule-insns -fschedule-insns2 -malign-double -fstrict-aliasing   conftest.c -lm  1>&5
-configure: In function 'main':
-configure:3363:7: warning: unused variable 'p' [-Wunused-variable]
 configure:3388: checking for alloca
-configure:3421: gcc -o conftest -O6 -fomit-frame-pointer -Wall -W -Wcast-qual -Wpointer-arith -Wcast-align -pedantic -fno-schedule-insns -fschedule-insns2 -malign-double -fstrict-aliasing   conftest.c -lm  1>&5
-configure: In function 'main':
-configure:3417:7: warning: unused variable 'p' [-Wunused-variable]
 configure:3589: checking for gettimeofday
-configure:3617: gcc -o conftest -O6 -fomit-frame-pointer -Wall -W -Wcast-qual -Wpointer-arith -Wcast-align -pedantic -fno-schedule-insns -fschedule-insns2 -malign-double -fstrict-aliasing   conftest.c -lm  1>&5
 configure:3644: checking for BSDgettimeofday
-configure:3672: gcc -o conftest -O6 -fomit-frame-pointer -Wall -W -Wcast-qual -Wpointer-arith -Wcast-align -pedantic -fno-schedule-insns -fschedule-insns2 -malign-double -fstrict-aliasing   conftest.c -lm  1>&5
-/tmp/ccp11Ql9.o: In function `main':
-conftest.c:(.text.startup+0x7): undefined reference to `BSDgettimeofday'
-collect2: error: ld returned 1 exit status
-configure: failed program was:
-#line 3649 "configure"
-#include "confdefs.h"
-/* System header to define __stub macros and hopefully few prototypes,
-    which can conflict with char BSDgettimeofday(); below.  */
-#include <assert.h>
-/* Override any gcc2 internal prototype to avoid an error.  */
-/* We use char because int might match the return type of a gcc2
-    builtin and then its argument prototype would still apply.  */
-char BSDgettimeofday();
-
-int main() {
-
-/* The GNU C library defines this for functions which it implements
-    to always fail with ENOSYS.  Some functions are actually named
-    something starting with __ and the normal name is an alias.  */
-#if defined (__stub_BSDgettimeofday) || defined (__stub___BSDgettimeofday)
-choke me
-#else
-BSDgettimeofday();
-#endif
-
-; return 0; }
 configure:3699: checking for gethrtime
-configure:3727: gcc -o conftest -O6 -fomit-frame-pointer -Wall -W -Wcast-qual -Wpointer-arith -Wcast-align -pedantic -fno-schedule-insns -fschedule-insns2 -malign-double -fstrict-aliasing   conftest.c -lm  1>&5
-/tmp/ccuGqP5f.o: In function `main':
-conftest.c:(.text.startup+0x7): undefined reference to `gethrtime'
-collect2: error: ld returned 1 exit status
-configure: failed program was:
-#line 3704 "configure"
-#include "confdefs.h"
-/* System header to define __stub macros and hopefully few prototypes,
-    which can conflict with char gethrtime(); below.  */
-#include <assert.h>
-/* Override any gcc2 internal prototype to avoid an error.  */
-/* We use char because int might match the return type of a gcc2
-    builtin and then its argument prototype would still apply.  */
-char gethrtime();
-
-int main() {
-
-/* The GNU C library defines this for functions which it implements
-    to always fail with ENOSYS.  Some functions are actually named
-    something starting with __ and the normal name is an alias.  */
-#if defined (__stub_gethrtime) || defined (__stub___gethrtime)
-choke me
-#else
-gethrtime();
-#endif
-
-; return 0; }
 configure:3754: checking for getopt
-configure:3782: gcc -o conftest -O6 -fomit-frame-pointer -Wall -W -Wcast-qual -Wpointer-arith -Wcast-align -pedantic -fno-schedule-insns -fschedule-insns2 -malign-double -fstrict-aliasing   conftest.c -lm  1>&5
 configure:3809: checking for getopt_long
-configure:3837: gcc -o conftest -O6 -fomit-frame-pointer -Wall -W -Wcast-qual -Wpointer-arith -Wcast-align -pedantic -fno-schedule-insns -fschedule-insns2 -malign-double -fstrict-aliasing   conftest.c -lm  1>&5
 configure:3863: checking for isnan
 configure:3873: gcc -o conftest -O6 -fomit-frame-pointer -Wall -W -Wcast-qual -Wpointer-arith -Wcast-align -pedantic -fno-schedule-insns -fschedule-insns2 -malign-double -fstrict-aliasing   conftest.c -lm  1>&5
 configure: In function 'main':
@@ -190,20 +117,7 @@ int main() {
 hrtime_t foobar;
 ; return 0; }
 configure:3926: checking size of int
-configure:3945: gcc -o conftest -O6 -fomit-frame-pointer -Wall -W -Wcast-qual -Wpointer-arith -Wcast-align -pedantic -fno-schedule-insns -fschedule-insns2 -malign-double -fstrict-aliasing   conftest.c -lm  1>&5
-configure:3936:1: warning: return type defaults to 'int' [-Wreturn-type]
-configure: In function 'main':
-configure:3939:3: warning: implicit declaration of function 'exit' [-Wimplicit-function-declaration]
-configure:3939:11: warning: incompatible implicit declaration of built-in function 'exit' [enabled by default]
-configure:3940:3: warning: format '%d' expects argument of type 'int', but argument 3 has type 'long unsigned int' [-Wformat]
 configure:3965: checking size of long long
-configure:3984: gcc -o conftest -O6 -fomit-frame-pointer -Wall -W -Wcast-qual -Wpointer-arith -Wcast-align -pedantic -fno-schedule-insns -fschedule-insns2 -malign-double -fstrict-aliasing   conftest.c -lm  1>&5
-configure:3975:1: warning: return type defaults to 'int' [-Wreturn-type]
-configure: In function 'main':
-configure:3978:3: warning: implicit declaration of function 'exit' [-Wimplicit-function-declaration]
-configure:3978:11: warning: incompatible implicit declaration of built-in function 'exit' [enabled by default]
-configure:3979:34: warning: ISO C90 does not support 'long long' [-Wlong-long]
-configure:3979:3: warning: format '%d' expects argument of type 'int', but argument 3 has type 'long unsigned int' [-Wformat]
 configure:4023: checking whether gcc accepts -fkeep-programmers-inline
 configure:4049: checking whether gcc accepts -vomit-frame-pointer
 configure:4740: checking for mpicc

@@ -1,0 +1,17 @@
+Primero hay que compilar e instalar el fftw:
+
+	- Instalar los paquetes fort77 y texi2html, no sé si hará falta alguno
+	  más que yo ya tuviera instalado, son los que yo he necesitado
+	  instalar.
+	
+	- Ejecutar ./configure --prefix=/usr/local/lib/fftw-2.1.3 . Importante
+	  esta ruta porque será donde se instalará la librería y de ello
+	  depende que luego compile el 3D Dock.
+	
+	- Compilar con make.
+	
+	- Instalar con sudo make install.
+
+Si todo ha ido bien, solo queda compilar el 3D Dock, simplemente ejecutando
+make.
+
