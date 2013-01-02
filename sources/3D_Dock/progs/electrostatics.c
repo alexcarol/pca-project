@@ -28,6 +28,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "structures.h"
 
+#define MIN(a,b) ((a)<(b)?(a):(b))
+
 void assign_charges(struct Structure This_Structure)
 {
 
@@ -143,33 +145,20 @@ void electric_field(struct Structure This_Structure, float grid_span, int grid_s
 							distance =
 							    pythagoras(This_Structure.Residue[residue].Atom[atom].coord[1], This_Structure.Residue[residue].Atom[atom].coord[2],
 								       This_Structure.Residue[residue].Atom[atom].coord[3], x_centre, y_centre, z_centre);
-
-							if (distance < 2.0)
-								distance = 2.0;
-
-							if (distance >= 2.0) {
-
-								if (distance >= 8.0) {
-
-									epsilon = 80;
-
-								} else {
-
-									if (distance <= 6.0) {
-
-										epsilon = 4;
-
-									} else {
-
-										epsilon = (38 * distance) - 224;
-
-									}
-
-								}
-
-								phi += (This_Structure.Residue[residue].Atom[atom].charge / (epsilon * distance));
-
+							
+							distance = MIN(distance, 2);
+							
+							if (distance >= 8) {
+								epsilon = 80;
 							}
+							else if (distance <= 6) {
+								epsilon = 4;
+							}
+							else {
+								epsilon = (38 * distance) - 224;
+							}
+							
+							phi += (This_Structure.Residue[residue].Atom[atom].charge / (epsilon * distance));
 
 						}
 

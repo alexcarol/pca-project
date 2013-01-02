@@ -143,7 +143,7 @@ extern struct Angle generate_global_angles(int angle_step);
 extern struct Angle generate_range_of_angles(int angle_step, int angle_range, int z_twist, int theta, int phi);
 
 extern int gord(float position, float grid_span, int grid_size);
-extern float pythagoras(float x1, float y1, float z1, float x2, float y2, float z2);
+//extern float pythagoras(float x1, float y1, float z1, float x2, float y2, float z2);
 
 extern void discretise_structure(struct Structure This_Structure, float grid_span, int grid_size, fftw_real * grid);
 extern void surface_grid(float grid_span, int grid_size, fftw_real * grid, float surface, float internal_value);
@@ -157,3 +157,13 @@ extern void qsort_scores(struct Score *Scores, int left, int right);
 extern void qsort_rpscores(struct Score *Scores, int left, int right);
 
 extern int numerical_sort(const void *a, const void *b);
+
+#ifndef pythagoras
+/*#define __PYTHAGORAS_DEF_
+inline float pythagoras(float x1, float y1, float z1, float x2, float y2, float z2)
+{
+	return sqrt(((x1 - x2) * (x1 - x2)) + ((y1 - y2) * (y1 - y2)) + ((z1 - z2) * (z1 - z2)));
+}*/
+#define pythagoras(x1, y1, z1, x2, y2, z2) sqrt((((x1) - (x2)) * ((x1) - (x2))) + (((y1) - (y2)) * ((y1) - (y2))) + (((z1) - (z2)) * ((z1) - (z2))))
+#endif
+
