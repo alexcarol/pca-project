@@ -70,6 +70,21 @@ struct Atom {
 	float charge;
 };
 
+struct Atom4Common {
+	int serial;
+	char atom_name[5];
+	float occupancy;
+	float temp_factor;
+};
+
+struct Atom4 {
+	float xs[4];
+	float ys[4];
+	float zs[4];
+	float charges[4];
+	struct Atom4Common common[4];
+};
+
 struct Amino_Acid {
 	char res_name[4];
 	char chainID[2];
@@ -78,6 +93,16 @@ struct Amino_Acid {
 	int nc;
 	int size;
 	struct Atom *Atom;
+};
+
+struct Amino_Acid4 {
+	char res_name[4];
+	char chainID[2];
+	char res_seq_plus_iCode[6];
+	char olc[2];
+	int nc;
+	int size;
+	struct Atom4 *Atom;
 };
 
 struct Structure {
