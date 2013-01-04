@@ -63,8 +63,8 @@ all:		$(PROGRAMS)
 
 #############
 
-ftdock:		ftdock.o $(LIBRARY_OBJECTS) structures.h
-		$(CC) $(CC_FLAGS_FULL) -o $@ ftdock.o $(LIBRARY_OBJECTS) $(FFTW_LINKERS) $(CC_LINKERS)
+ftdock:		ftdock.o $(LIBRARY_OBJECTS) threads.o structures.h
+		$(CC) $(CC_FLAGS_FULL) -o $@ ftdock.o threads.o -lpthread $(LIBRARY_OBJECTS) $(FFTW_LINKERS) $(CC_LINKERS)
 #		$(STRIP) $@
 		$(SECURITY) $@
 
@@ -101,3 +101,5 @@ electrostatics.o:		structures.h
 grid.o:				structures.h
 manipulate_structures.o:	structures.h
 qsort_scores.o:			structures.h
+threads.o:			structures.h
+

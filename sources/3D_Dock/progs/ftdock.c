@@ -27,6 +27,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "structures.h"
+#include "threads.h"
 
 void print_electric_grid(fftw_real * grid, int grid_size)
 {
@@ -474,8 +475,29 @@ int main(int argc, char *argv[])
 	/* Create FFTW plans */
 
 	printf("Creating plans\n");
-	p = rfftw3d_create_plan(global_grid_size, global_grid_size, global_grid_size, FFTW_REAL_TO_COMPLEX, FFTW_MEASURE | FFTW_IN_PLACE);
-	pinv = rfftw3d_create_plan(global_grid_size, global_grid_size, global_grid_size, FFTW_COMPLEX_TO_REAL, FFTW_MEASURE | FFTW_IN_PLACE);
+	
+	struct rfftw3d_create_plan_parameters params1, params2;
+	params1.ret = &p;
+	params1.nx = global_grid_size;
+	params1.ny = global_grid_size;
+	params1.nz = global_grid_size;
+	params1.dir = FFTW_REAL_TO_COMPLEX;
+	params1.flags = FFTW_MEASURE | FFTW_IN_PLACE;
+	
+	params2.ret = &pinv;
+	params2.nx = global_grid_size;
+	params2.ny = global_grid_size;
+	params2.nz = global_grid_size;
+	params2.dir = FFTW_COMPLEX_TO_REAL;
+	params2.flags = FFTW_MEASURE | FFTW_IN_PLACE;
+	
+	pthread_t t_plan1, t_plan2;
+	
+	pthread_create(&t_plan1, NULL, rfftw3d_create_plan_thread, &params1);
+	pthread_create(&t_plan2, NULL, rfftw3d_create_plan_thread, &params2);
+	
+	//p = rfftw3d_create_plan(global_grid_size, global_grid_size, global_grid_size, FFTW_REAL_TO_COMPLEX, FFTW_MEASURE | FFTW_IN_PLACE);
+	//pinv = rfftw3d_create_plan(global_grid_size, global_grid_size, global_grid_size, FFTW_COMPLEX_TO_REAL, FFTW_MEASURE | FFTW_IN_PLACE);
 
 /************/
 
@@ -491,6 +513,9 @@ int main(int argc, char *argv[])
 		electric_field(Origin_Static_Structure, grid_span, global_grid_size, static_elec_grid);
 		electric_field_zero_core(global_grid_size, static_elec_grid, static_grid, internal_value);
 	}
+
+	pthread_join(t_plan1, NULL);
+	pthread_join(t_plan2, NULL);
 
 	/* Fourier Transform the static grids (need do only once) */
 	printf("  one time forward FFT calculations\n");

@@ -90,50 +90,6 @@ void assign_charges(struct Structure This_Structure)
 
 /************************/
 
-#ifdef USE_AVX
-#define IN_NFLOATS 8
-#define __mtype __m256
-#define _set1_ps(a) _mm256_set1_ps(a)
-#define _load_ps(a) _mm256_load_ps(a)
-#define _sub_ps(a,b) _mm256_sub_ps(a,b)
-#define _add_ps(a,b) _mm256_add_ps(a,b)
-#define _mul_ps(a,b) _mm256_mul_ps(a,b)
-#define _div_ps(a,b) _mm256_div_ps(a,b)
-#define _sqrt_ps(a) _mm256_sqrt_ps(a)
-#define _max_ps(a,b) _mm256_max_ps(a,b)
-#define _and_ps(a,b) _mm256_and_ps(a,b)
-#define _or_ps(a,b) _mm256_or_ps(a,b)
-#define _cmpge_ps(a,b) _mm256_cmp_ps(a,b,_CMP_GE_OS)
-#define _cmple_ps(a,b) _mm256_cmp_ps(a,b,_CMP_LE_OS)
-#define _cmpgt_ps(a,b) _mm256_cmp_ps(a,b,_CMP_GT_OS)
-#define _cmpeq_ps(a,b) _mm256_cmp_ps(a,b,_CMP_EQ_OQ)
-#else
-#define IN_NFLOATS 4
-#define __mtype __m128
-#define _set1_ps(a) _mm_set1_ps(a)
-#define _load_ps(a) _mm_load_ps(a)
-#define _sub_ps(a,b) _mm_sub_ps(a,b)
-#define _add_ps(a,b) _mm_add_ps(a,b)
-#define _mul_ps(a,b) _mm_mul_ps(a,b)
-#define _div_ps(a,b) _mm_div_ps(a,b)
-#define _sqrt_ps(a) _mm_sqrt_ps(a)
-#define _max_ps(a,b) _mm_max_ps(a,b)
-#define _and_ps(a,b) _mm_and_ps(a,b)
-#define _or_ps(a,b) _mm_or_ps(a,b)
-#define _cmpge_ps(a,b) _mm_cmpge_ps(a,b)
-#define _cmple_ps(a,b) _mm_cmple_ps(a,b)
-#define _cmpgt_ps(a,b) _mm_cmpgt_ps(a,b)
-#define _cmpeq_ps(a,b) _mm_cmpeq_ps(a,b)
-#endif
-
-// Estructura auxiliar
-struct atom_values {
-	float xs[IN_NFLOATS];
-	float ys[IN_NFLOATS];
-	float zs[IN_NFLOATS];
-	float charges[IN_NFLOATS];
-};
-
 void electric_field(struct Structure This_Structure, float grid_span, int grid_size, fftw_real * grid)
 {
 
@@ -289,21 +245,19 @@ void electric_field(struct Structure This_Structure, float grid_span, int grid_s
 				}
 				#ifdef USE_AVX
 				
-				phi += phis[0];
-				phi += phis[1];
-				phi += phis[2];
-				phi += phis[3];
-				phi += phis[4];
-				phi += phis[5];
-				phi += phis[6];
-				phi += phis[7];
+				phis = _mm256_hadd_ps(phis, phis);
+				phis = _mm256_hadd_ps(phis, phis);
+				
+				phi = phis[0] + phis[4];
 				
 				#else
 				
-				phi += phis[0];
-				phi += phis[1];
-				phi += phis[2];
-				phi += phis[3];
+				float tmp, tmp2;
+				
+				tmp = phis[0] + phis[1];
+				tmp2 = phis[2] + phis[3];
+				
+				phi = tmp + tmp2;
 				
 				#endif
 				grid[gaddress(x, y, z, grid_size)] = (fftw_real) phi;

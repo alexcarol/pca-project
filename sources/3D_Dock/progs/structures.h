@@ -26,6 +26,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
+#ifndef __DEF_STRUCTURES_
+#define __DEF_STRUCTURES_
+
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
@@ -119,6 +122,59 @@ struct Matrix {
 	float score[21][21];
 };
 
+#ifdef USE_AVX
+#define IN_NFLOATS 8
+#define __mtype __m256
+#define _set1_ps(a) _mm256_set1_ps(a)
+#define _load_ps(a) _mm256_load_ps(a)
+#define _sub_ps(a,b) _mm256_sub_ps(a,b)
+#define _add_ps(a,b) _mm256_add_ps(a,b)
+#define _mul_ps(a,b) _mm256_mul_ps(a,b)
+#define _div_ps(a,b) _mm256_div_ps(a,b)
+#define _sqrt_ps(a) _mm256_sqrt_ps(a)
+#define _max_ps(a,b) _mm256_max_ps(a,b)
+#define _and_ps(a,b) _mm256_and_ps(a,b)
+#define _or_ps(a,b) _mm256_or_ps(a,b)
+#define _cmpge_ps(a,b) _mm256_cmp_ps(a,b,_CMP_GE_OS)
+#define _cmple_ps(a,b) _mm256_cmp_ps(a,b,_CMP_LE_OS)
+#define _cmpgt_ps(a,b) _mm256_cmp_ps(a,b,_CMP_GT_OS)
+#define _cmpeq_ps(a,b) _mm256_cmp_ps(a,b,_CMP_EQ_OQ)
+#else
+#define IN_NFLOATS 4
+#define __mtype __m128
+#define _set1_ps(a) _mm_set1_ps(a)
+#define _load_ps(a) _mm_load_ps(a)
+#define _sub_ps(a,b) _mm_sub_ps(a,b)
+#define _add_ps(a,b) _mm_add_ps(a,b)
+#define _mul_ps(a,b) _mm_mul_ps(a,b)
+#define _div_ps(a,b) _mm_div_ps(a,b)
+#define _sqrt_ps(a) _mm_sqrt_ps(a)
+#define _max_ps(a,b) _mm_max_ps(a,b)
+#define _and_ps(a,b) _mm_and_ps(a,b)
+#define _or_ps(a,b) _mm_or_ps(a,b)
+#define _cmpge_ps(a,b) _mm_cmpge_ps(a,b)
+#define _cmple_ps(a,b) _mm_cmple_ps(a,b)
+#define _cmpgt_ps(a,b) _mm_cmpgt_ps(a,b)
+#define _cmpeq_ps(a,b) _mm_cmpeq_ps(a,b)
+#endif
+
+// Estructura auxiliar
+struct atom_values {
+	float xs[IN_NFLOATS];
+	float ys[IN_NFLOATS];
+	float zs[IN_NFLOATS];
+	float charges[IN_NFLOATS];
+};
+
+struct rfftw3d_create_plan_parameters {
+	rfftwnd_plan *ret;
+	int nx;
+	int ny;
+	int nz;
+	fftw_direction dir;
+	int flags;
+};
+
 /************/
 
 /* Memory allocation sizes */
@@ -157,4 +213,6 @@ extern void qsort_scores(struct Score *Scores, int left, int right);
 extern void qsort_rpscores(struct Score *Scores, int left, int right);
 
 extern int numerical_sort(const void *a, const void *b);
+
+#endif
 
