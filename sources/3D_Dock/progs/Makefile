@@ -24,7 +24,15 @@ SHELL           = /bin/sh
 
 CC              = gcc
 
-CC_FLAGS        = -O3 -march=corei7 -g -static 
+# Flags for Corei7 with AVX
+CC_FLAGS        = -O3 -march=corei7-avx -DUSE_AVX -g -static
+
+# Flags for Corei7 with SSE
+#CC_FLAGS	= -O3 -march=corei7 -g -static
+
+# Flags for Core2 with SSE
+#CC_FLAGS	= -O3 -march=core2 -g -static
+
 STRIP           = strip
 
 CC_LINKERS      = -lm

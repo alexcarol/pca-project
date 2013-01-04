@@ -27,7 +27,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "structures.h"
+
+#ifdef USE_AVX
+#include <immintrin.h>
+#else
 #include <xmmintrin.h>
+#endif
+
+#include <malloc.h>
 
 void assign_charges(struct Structure This_Structure)
 {
@@ -83,12 +90,48 @@ void assign_charges(struct Structure This_Structure)
 
 /************************/
 
+#ifdef USE_AVX
+#define IN_NFLOATS 8
+#define __mtype __m256
+#define _set1_ps(a) _mm256_set1_ps(a)
+#define _load_ps(a) _mm256_load_ps(a)
+#define _sub_ps(a,b) _mm256_sub_ps(a,b)
+#define _add_ps(a,b) _mm256_add_ps(a,b)
+#define _mul_ps(a,b) _mm256_mul_ps(a,b)
+#define _div_ps(a,b) _mm256_div_ps(a,b)
+#define _sqrt_ps(a) _mm256_sqrt_ps(a)
+#define _max_ps(a,b) _mm256_max_ps(a,b)
+#define _and_ps(a,b) _mm256_and_ps(a,b)
+#define _or_ps(a,b) _mm256_or_ps(a,b)
+#define _cmpge_ps(a,b) _mm256_cmp_ps(a,b,_CMP_GE_OS)
+#define _cmple_ps(a,b) _mm256_cmp_ps(a,b,_CMP_LE_OS)
+#define _cmpgt_ps(a,b) _mm256_cmp_ps(a,b,_CMP_GT_OS)
+#define _cmpeq_ps(a,b) _mm256_cmp_ps(a,b,_CMP_EQ_OQ)
+#else
+#define IN_NFLOATS 4
+#define __mtype __m128
+#define _set1_ps(a) _mm_set1_ps(a)
+#define _load_ps(a) _mm_load_ps(a)
+#define _sub_ps(a,b) _mm_sub_ps(a,b)
+#define _add_ps(a,b) _mm_add_ps(a,b)
+#define _mul_ps(a,b) _mm_mul_ps(a,b)
+#define _div_ps(a,b) _mm_div_ps(a,b)
+#define _sqrt_ps(a) _mm_sqrt_ps(a)
+#define _max_ps(a,b) _mm_max_ps(a,b)
+#define _and_ps(a,b) _mm_and_ps(a,b)
+#define _or_ps(a,b) _mm_or_ps(a,b)
+#define _cmpge_ps(a,b) _mm_cmpge_ps(a,b)
+#define _cmple_ps(a,b) _mm_cmple_ps(a,b)
+#define _cmpgt_ps(a,b) _mm_cmpgt_ps(a,b)
+#define _cmpeq_ps(a,b) _mm_cmpeq_ps(a,b)
+#endif
+
 // Estructura auxiliar
-struct atom4_values {
-	float xs[4];
-	float ys[4];
-	float zs[4];
-	float charges[4];
+struct atom_values {
+	float xs[IN_NFLOATS];
+	float ys[IN_NFLOATS];
+	float zs[IN_NFLOATS];
+	float charges[IN_NFLOATS];
 };
 
 void electric_field(struct Structure This_Structure, float grid_span, int grid_size, fftw_real * grid)
@@ -133,9 +176,10 @@ void electric_field(struct Structure This_Structure, float grid_span, int grid_s
 	for (residue = 1; residue <= This_Structure.length; residue++)
 		natoms += This_Structure.Residue[residue].size;
 	
-	int natoms4 = natoms % 4 == 0 ? natoms / 4 : natoms / 4 + 1;
+	int natoms_in = natoms % IN_NFLOATS == 0 ? natoms / IN_NFLOATS : natoms / IN_NFLOATS + 1;
 	
-	struct atom4_values *atoms = malloc(natoms4 * sizeof(struct atom4_values));
+	// El array debe estar alineado a IN_NFLOATS * 4 bytes
+	struct atom_values *atoms = memalign(IN_NFLOATS * 4, natoms_in * sizeof(struct atom_values));
 	
 	int i = 0;
 	for (residue = 1; residue <= This_Structure.length; residue++)
@@ -145,106 +189,121 @@ void electric_field(struct Structure This_Structure, float grid_span, int grid_s
 				continue;
 			}
 			
-			atoms[i/4].xs[i%4] = This_Structure.Residue[residue].Atom[atom].coord[1];
-			atoms[i/4].ys[i%4] = This_Structure.Residue[residue].Atom[atom].coord[2];
-			atoms[i/4].zs[i%4] = This_Structure.Residue[residue].Atom[atom].coord[3];
-			atoms[i/4].charges[i%4] = This_Structure.Residue[residue].Atom[atom].charge;
+			atoms[i/IN_NFLOATS].xs[i%IN_NFLOATS] = This_Structure.Residue[residue].Atom[atom].coord[1];
+			atoms[i/IN_NFLOATS].ys[i%IN_NFLOATS] = This_Structure.Residue[residue].Atom[atom].coord[2];
+			atoms[i/IN_NFLOATS].zs[i%IN_NFLOATS] = This_Structure.Residue[residue].Atom[atom].coord[3];
+			atoms[i/IN_NFLOATS].charges[i%IN_NFLOATS] = This_Structure.Residue[residue].Atom[atom].charge;
 			i++;
 		}
 	
-	for (; i % 4 != 0; i++) {
-		atoms[i/4].xs[i%4] = 0;
-		atoms[i/4].ys[i%4] = 0;
-		atoms[i/4].zs[i%4] = 0;
-		atoms[i/4].charges[i%4] = 0;
+	// Me aseguro de que todos los átomos quedan inicializados en caso de que
+	// su número no sea múltiplo de IN_NFLOATS. Los átomos con carga 0 no afectan al
+	// cálculo ya que la carga se usa para multiplicar el incremento de phi,
+	// así que es seguro computar estos "átomos" de más.
+	for (; i % IN_NFLOATS != 0; i++) {
+		atoms[i/IN_NFLOATS].xs[i%IN_NFLOATS] = 0;
+		atoms[i/IN_NFLOATS].ys[i%IN_NFLOATS] = 0;
+		atoms[i/IN_NFLOATS].zs[i%IN_NFLOATS] = 0;
+		atoms[i/IN_NFLOATS].charges[i%IN_NFLOATS] = 0;
 	}
 	
-	natoms4 = natoms % 4 == 0 ? natoms / 4 : natoms / 4 + 1;
+	natoms_in = natoms % IN_NFLOATS == 0 ? natoms / IN_NFLOATS : natoms / IN_NFLOATS + 1;
 
 	for (x = 0; x < grid_size; x++) {
 
 		printf(".");
 
 		x_centre = gcentre(x, grid_span, grid_size);
-		__m128 mx_centre = _mm_set1_ps(x_centre);
+		__mtype mx_centre = _set1_ps(x_centre);
 
 		for (y = 0; y < grid_size; y++) {
 
 			y_centre = gcentre(y, grid_span, grid_size);
-			__m128 my_centre = _mm_set1_ps(y_centre);
+			__mtype my_centre = _set1_ps(y_centre);
 
 			for (z = 0; z < grid_size; z++) {
 
 				z_centre = gcentre(z, grid_span, grid_size);
-				__m128 mz_centre = _mm_set1_ps(z_centre);
+				__mtype mz_centre = _set1_ps(z_centre);
 
 				phi = 0;
-				__m128 phis = _mm_set1_ps(0);
+				__mtype phis = _set1_ps(0.0);
 				
-				for (i = 0; i < natoms4; i++) {
+				for (i = 0; i < natoms_in; i++) {
 				
-					__m128 xs = _mm_load_ps(atoms[i].xs);
-					__m128 ys = _mm_load_ps(atoms[i].ys);
-					__m128 zs = _mm_load_ps(atoms[i].zs);
-					__m128 charges = _mm_load_ps(atoms[i].charges);
-					__m128 distances;
+					__mtype xs = _load_ps(atoms[i].xs);
+					__mtype ys = _load_ps(atoms[i].ys);
+					__mtype zs = _load_ps(atoms[i].zs);
+					__mtype charges = _load_ps(atoms[i].charges);
+					__mtype distances;
 					
 					// Calculo distancias (el original pythagoras)
-					__m128 diffxs = _mm_sub_ps(xs, mx_centre);
-					__m128 diffys = _mm_sub_ps(ys, my_centre);
-					__m128 diffzs = _mm_sub_ps(zs, mz_centre);
+					__mtype diffxs = _sub_ps(xs, mx_centre);
+					__mtype diffys = _sub_ps(ys, my_centre);
+					__mtype diffzs = _sub_ps(zs, mz_centre);
 					
-					diffxs = _mm_mul_ps(diffxs, diffxs);
-					diffys = _mm_mul_ps(diffys, diffys);
-					diffzs = _mm_mul_ps(diffzs, diffzs);
+					diffxs = _mul_ps(diffxs, diffxs);
+					diffys = _mul_ps(diffys, diffys);
+					diffzs = _mul_ps(diffzs, diffzs);
 					
-					distances = _mm_add_ps(diffxs, diffys);
-					distances = _mm_add_ps(distances, diffzs);
+					distances = _add_ps(diffxs, diffys);
+					distances = _add_ps(distances, diffzs);
 					
-					distances = _mm_sqrt_ps(distances);
+					distances = _sqrt_ps(distances);
 					
 					// A partir de aquí implemento los if's originales usando solo máscaras de bits
 					
 					// Trunco a 2 como mínimo
-					distances = _mm_max_ps(distances, _mm_set1_ps(2.0));
+					distances = _max_ps(distances, _set1_ps(2.0));
 					
-					__m128 epsilons = _mm_set1_ps(0.0);
-					__m128 tmp;
-					__m128 tmp2;
+					__mtype epsilons = _set1_ps(0.0);
+					__mtype tmp;
+					__mtype tmp2;
 					
 					// if >= 8
-					tmp = _mm_cmpge_ps(distances, _mm_set1_ps(8.0));
-					epsilons = _mm_and_ps(tmp, _mm_set1_ps(80.0));
+					tmp = _cmpge_ps(distances, _set1_ps(8.0));
+					epsilons = _and_ps(tmp, _set1_ps(80.0));
 					
 					// else if <= 6
-					tmp = _mm_cmple_ps(distances, _mm_set1_ps(6.0));
-					tmp = _mm_and_ps(tmp, _mm_set1_ps(4.0));
-					epsilons = _mm_or_ps(epsilons, tmp);
+					tmp = _cmple_ps(distances, _set1_ps(6.0));
+					tmp = _and_ps(tmp, _set1_ps(4.0));
+					epsilons = _or_ps(epsilons, tmp);
 					
 					// else
-					tmp = _mm_cmpgt_ps(distances, _mm_set1_ps(6.0));
-					tmp2 = _mm_cmpeq_ps(epsilons, _mm_set1_ps(0.0));
-					tmp = _mm_and_ps(tmp, tmp2);
-					tmp2 = _mm_mul_ps(distances, _mm_set1_ps(38.0));
-					tmp2 = _mm_sub_ps(tmp2, _mm_set1_ps(224.0));
-					tmp = _mm_and_ps(tmp, tmp2);
+					tmp = _cmpgt_ps(distances, _set1_ps(6.0));
+					tmp2 = _cmpeq_ps(epsilons, _set1_ps(0.0));
+					tmp = _and_ps(tmp, tmp2);
+					tmp2 = _mul_ps(distances, _set1_ps(38.0));
+					tmp2 = _sub_ps(tmp2, _set1_ps(224.0));
+					tmp = _and_ps(tmp, tmp2);
 			
 					// Valor final
-					epsilons = _mm_or_ps(epsilons, tmp);
+					epsilons = _or_ps(epsilons, tmp);
 					
 					// Calculo las phis
-					tmp = _mm_mul_ps(epsilons, distances);
-					tmp = _mm_div_ps(charges, tmp);
+					tmp = _mul_ps(epsilons, distances);
+					tmp = _div_ps(charges, tmp);
 					
 					// Acumulo las phis
-					phis = _mm_add_ps(phis, tmp);
+					phis = _add_ps(phis, tmp);
 				}
+				#ifdef USE_AVX
+				
+				phis = _mm256_hadd_ps(phis, phis);
+				
+				phi += phis[0];
+				phi += phis[2];
+				phi += phis[4];
+				phi += phis[6];
+				
+				#else
 				
 				phi += phis[0];
 				phi += phis[1];
 				phi += phis[2];
 				phi += phis[3];
-
+				
+				#endif
 				grid[gaddress(x, y, z, grid_size)] = (fftw_real) phi;
 
 			}
