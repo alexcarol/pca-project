@@ -15,6 +15,17 @@ void *rfftw3d_create_plan_thread(void *v_params)
 	return NULL;
 }
 
+void *rfftwnd_one_real_to_complex_thread(void *v_params)
+{
+	struct rfftwnd_one_real_to_complex_parameters *params = v_params;
+
+	rfftwnd_one_real_to_complex(params->plan, params->in, params->out);
+	
+	sem_post(&num_threads_sem);
+	
+	return NULL;
+}
+
 void *electric_field_thread(void *v_params)
 {
 	struct electric_field_parameters *params = v_params;

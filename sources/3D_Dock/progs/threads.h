@@ -20,6 +20,12 @@ struct rfftw3d_create_plan_parameters {
 	int flags;
 };
 
+struct rfftwnd_one_real_to_complex_parameters {
+	rfftwnd_plan plan;
+	fftw_real *in;
+	fftw_complex *out;
+};
+
 struct electric_field_parameters {
 	struct Structure This_Structure;
 	float grid_span;
@@ -31,6 +37,7 @@ struct electric_field_parameters {
 };
 
 void *rfftw3d_create_plan_thread(void *v_params);
+void *rfftwnd_one_real_to_complex_thread(void *v_params);
 void *electric_field_thread(void *v_params);
 
 #endif

@@ -554,10 +554,28 @@ int main(int argc, char *argv[])
 
 	/* Fourier Transform the static grids (need do only once) */
 	printf("  one time forward FFT calculations\n");
-	rfftwnd_one_real_to_complex(p, static_grid, NULL);
+	struct rfftwnd_one_real_to_complex_parameters fft_parameters1;
+	fft_parameters1.plan = p;
+	fft_parameters1.in = static_grid;
+	fft_parameters1.out = NULL;
+	
+	pthread_t fft1_t;
+	sem_wait(&num_threads_sem);
+	pthread_create(&fft1_t, NULL, rfftwnd_one_real_to_complex_thread, &fft_parameters1);
+	//rfftwnd_one_real_to_complex(p, static_grid, NULL);
 	if (electrostatics == 1) {
-		rfftwnd_one_real_to_complex(p, static_elec_grid, NULL);
+		struct rfftwnd_one_real_to_complex_parameters fft_parameters2;
+		fft_parameters2.plan = p;
+		fft_parameters2.in = static_elec_grid;
+		fft_parameters2.out = NULL;
+
+		pthread_t fft2_t;
+		sem_wait(&num_threads_sem);
+		pthread_create(&fft2_t, NULL, rfftwnd_one_real_to_complex_thread, &fft_parameters1);
+		pthread_join(fft2_t, NULL);
+		//rfftwnd_one_real_to_complex(p, static_elec_grid, NULL);
 	}
+	pthread_join(fft1_t, NULL);
 
 	printf("  done\n");
 
