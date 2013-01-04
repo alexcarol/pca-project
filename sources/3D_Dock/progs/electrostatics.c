@@ -289,12 +289,14 @@ void electric_field(struct Structure This_Structure, float grid_span, int grid_s
 				}
 				#ifdef USE_AVX
 				
-				phis = _mm256_hadd_ps(phis, phis);
-				
 				phi += phis[0];
+				phi += phis[1];
 				phi += phis[2];
+				phi += phis[3];
 				phi += phis[4];
+				phi += phis[5];
 				phi += phis[6];
+				phi += phis[7];
 				
 				#else
 				
