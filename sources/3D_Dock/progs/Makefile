@@ -25,7 +25,7 @@ SHELL           = /bin/sh
 CC              = gcc
 
 # Flags for Corei7 with AVX
-CC_FLAGS        = -O3 -march=corei7-avx -DUSE_AVX -DNTHREADS=6 -g -static
+CC_FLAGS        = -O3 -march=corei7-avx -DUSE_AVX -DNTHREADS=8 -g -static
 
 # Flags for Corei7 with SSE
 #CC_FLAGS	= -O3 -march=corei7 -DNTHREADS=6 -g -static

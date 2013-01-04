@@ -178,9 +178,8 @@ void electric_field(struct Structure This_Structure, float grid_span, int grid_s
 		*shared_x = *shared_x + 1;
 		pthread_mutex_unlock(&shared_x_mutex);
 		
-		if (x >= grid_size) {
+		if (x >= grid_size)
 			break;
-		}
 		
 		printf(".");
 

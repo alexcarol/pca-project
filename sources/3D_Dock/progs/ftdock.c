@@ -548,7 +548,8 @@ int main(int argc, char *argv[])
 		//electric_field(Origin_Static_Structure, grid_span, global_grid_size, static_elec_grid, &shared_x, atoms, natoms_in);
 		electric_field_zero_core(global_grid_size, static_elec_grid, static_grid, internal_value);
 	}
-
+	
+	// Antes de hacer la fft hay que esperar a que el plan esté listo
 	pthread_join(t_plan1, NULL);
 
 	/* Fourier Transform the static grids (need do only once) */
@@ -660,6 +661,7 @@ int main(int argc, char *argv[])
 			}
 		}
 		
+		// Esperar a que el plan de la fft inversa esté listo
 		pthread_join(t_plan2, NULL);
 		
 		/* Reverse Fourier Transform */
