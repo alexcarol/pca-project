@@ -144,11 +144,12 @@ void electric_field(struct Structure This_Structure, float grid_span, int grid_s
 				natoms--;
 				continue;
 			}
-			
-			atoms[i/IN_NFLOATS].xs[i%IN_NFLOATS] = This_Structure.Residue[residue].Atom[atom].coord[1];
-			atoms[i/IN_NFLOATS].ys[i%IN_NFLOATS] = This_Structure.Residue[residue].Atom[atom].coord[2];
-			atoms[i/IN_NFLOATS].zs[i%IN_NFLOATS] = This_Structure.Residue[residue].Atom[atom].coord[3];
-			atoms[i/IN_NFLOATS].charges[i%IN_NFLOATS] = This_Structure.Residue[residue].Atom[atom].charge;
+			int q = i/IN_NFLOATS;
+            int r = i - q*IN_NFLOATS;
+			atoms[q].xs[r] = This_Structure.Residue[residue].Atom[atom].coord[1];
+			atoms[q].ys[r] = This_Structure.Residue[residue].Atom[atom].coord[2];
+			atoms[q].zs[r] = This_Structure.Residue[residue].Atom[atom].coord[3];
+    		atoms[q].charges[r] = This_Structure.Residue[residue].Atom[atom].charge;
 			i++;
 		}
 	
@@ -157,10 +158,12 @@ void electric_field(struct Structure This_Structure, float grid_span, int grid_s
 	// cálculo ya que la carga se usa para multiplicar el incremento de phi,
 	// así que es seguro computar estos "átomos" de más.
 	for (; i % IN_NFLOATS != 0; i++) {
-		atoms[i/IN_NFLOATS].xs[i%IN_NFLOATS] = 0;
-		atoms[i/IN_NFLOATS].ys[i%IN_NFLOATS] = 0;
-		atoms[i/IN_NFLOATS].zs[i%IN_NFLOATS] = 0;
-		atoms[i/IN_NFLOATS].charges[i%IN_NFLOATS] = 0;
+		int q = i/IN_NFLOATS;
+        int r = i - q*IN_NFLOATS;
+		atoms[q].xs[r] = 0;
+		atoms[q].ys[r] = 0;
+		atoms[q].zs[r] = 0;
+		atoms[q].charges[r] = 0;
 	}
 	
 	natoms_in = natoms % IN_NFLOATS == 0 ? natoms / IN_NFLOATS : natoms / IN_NFLOATS + 1;
