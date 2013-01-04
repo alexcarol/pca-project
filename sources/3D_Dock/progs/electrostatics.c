@@ -83,6 +83,14 @@ void assign_charges(struct Structure This_Structure)
 
 /************************/
 
+// Estructura auxiliar
+struct atom4_values {
+	float xs[4];
+	float ys[4];
+	float zs[4];
+	float charges[4];
+};
+
 void electric_field(struct Structure This_Structure, float grid_span, int grid_size, fftw_real * grid)
 {
 
@@ -119,6 +127,39 @@ void electric_field(struct Structure This_Structure, float grid_span, int grid_s
 	setvbuf(stdout, (char *)NULL, _IONBF, 0);
 
 	printf("  electric field calculations ( one dot / grid sheet ) ");
+	
+	// Bien, vamos a arrejuntar todo lo interesante...
+	int natoms = 0;
+	for (residue = 1; residue <= This_Structure.length; residue++)
+		natoms += This_Structure.Residue[residue].size;
+	
+	int natoms4 = natoms % 4 == 0 ? natoms / 4 : natoms / 4 + 1;
+	
+	struct atom4_values *atoms = malloc(natoms4 * sizeof(struct atom4_values));
+	
+	int i = 0;
+	for (residue = 1; residue <= This_Structure.length; residue++)
+		for (atom = 1; atom <= This_Structure.Residue[residue].size; atom++) {
+			if (This_Structure.Residue[residue].Atom[atom].charge == 0) {
+				natoms--;
+				continue;
+			}
+			
+			atoms[i/4].xs[i%4] = This_Structure.Residue[residue].Atom[atom].coord[1];
+			atoms[i/4].ys[i%4] = This_Structure.Residue[residue].Atom[atom].coord[2];
+			atoms[i/4].zs[i%4] = This_Structure.Residue[residue].Atom[atom].coord[3];
+			atoms[i/4].charges[i%4] = This_Structure.Residue[residue].Atom[atom].charge;
+			i++;
+		}
+	
+	for (; i % 4 != 0; i++) {
+		atoms[i/4].xs[i%4] = 0;
+		atoms[i/4].ys[i%4] = 0;
+		atoms[i/4].zs[i%4] = 0;
+		atoms[i/4].charges[i%4] = 0;
+	}
+	
+	natoms4 = natoms % 4 == 0 ? natoms / 4 : natoms / 4 + 1;
 
 	for (x = 0; x < grid_size; x++) {
 
@@ -138,115 +179,71 @@ void electric_field(struct Structure This_Structure, float grid_span, int grid_s
 				__m128 mz_centre = _mm_set1_ps(z_centre);
 
 				phi = 0;
-				__m128 phis = _mm_set1_ps(0.0);
+				__m128 phis = _mm_set1_ps(0);
 				
-				for (residue = 1; residue <= This_Structure.length; residue++) {
-					for (atom = 1; atom <= This_Structure.Residue[residue].size - 3; atom += 4) {
-						__m128 charges = {
-							This_Structure.Residue[residue].Atom[atom].charge,
-							This_Structure.Residue[residue].Atom[atom+1].charge,
-							This_Structure.Residue[residue].Atom[atom+2].charge,
-							This_Structure.Residue[residue].Atom[atom+3].charge
-						};
-						
-						if (charges[0] == 0 && charges[1] == 0 && charges[2] == 0 && charges[3] == 0)
-							continue;
-						
-						__m128 xs = {
-							This_Structure.Residue[residue].Atom[atom].coord[1],
-							This_Structure.Residue[residue].Atom[atom+1].coord[1],
-							This_Structure.Residue[residue].Atom[atom+2].coord[1],
-							This_Structure.Residue[residue].Atom[atom+3].coord[1]
-						};
-						
-						__m128 ys = {
-							This_Structure.Residue[residue].Atom[atom].coord[2],
-							This_Structure.Residue[residue].Atom[atom+1].coord[2],
-							This_Structure.Residue[residue].Atom[atom+2].coord[2],
-							This_Structure.Residue[residue].Atom[atom+3].coord[2]
-						};
-						
-						__m128 zs = {
-							This_Structure.Residue[residue].Atom[atom].coord[3],
-							This_Structure.Residue[residue].Atom[atom+1].coord[3],
-							This_Structure.Residue[residue].Atom[atom+2].coord[3],
-							This_Structure.Residue[residue].Atom[atom+3].coord[3]
-						};
-						
-						__m128 distances;
-						
-						// Calculo distancias
-						__m128 diffxs = _mm_sub_ps(xs, mx_centre);
-						__m128 diffys = _mm_sub_ps(ys, my_centre);
-						__m128 diffzs = _mm_sub_ps(zs, mz_centre);
-						
-						diffxs = _mm_mul_ps(diffxs, diffxs);
-						diffys = _mm_mul_ps(diffys, diffys);
-						diffzs = _mm_mul_ps(diffzs, diffzs);
-						
-						distances = _mm_add_ps(diffxs, diffys);
-						distances = _mm_add_ps(distances, diffzs);
-						distances = _mm_sqrt_ps(distances);
-						distances = _mm_max_ps(distances, _mm_set1_ps(2.0));
-						
-						__m128 epsilons = _mm_set1_ps(0.0);
-						__m128 tmp;
-						__m128 tmp2;
-						
-						tmp = _mm_cmpge_ps(distances, _mm_set1_ps(8.0));
-						epsilons = _mm_and_ps(tmp, _mm_set1_ps(80.0));
-						
-						if ((int)tmp[0] == 0 || (int)tmp[1] == 0 || (int)tmp[2] == 0 || (int)tmp[3] == 0) {
-						
-							tmp = _mm_cmple_ps(distances, _mm_set1_ps(6.0));
-							tmp = _mm_and_ps(tmp, _mm_set1_ps(4.0));
-							epsilons = _mm_or_ps(epsilons, tmp);
-						
-							tmp = _mm_cmpgt_ps(distances, _mm_set1_ps(6.0));
-							tmp2 = _mm_cmpeq_ps(epsilons, _mm_set1_ps(0.0));
-							tmp = _mm_and_ps(tmp, tmp2);
-							tmp2 = _mm_mul_ps(distances, _mm_set1_ps(38.0));
-							tmp2 = _mm_sub_ps(tmp2, _mm_set1_ps(224.0));
-							tmp = _mm_and_ps(tmp, tmp2);
-						
-							epsilons = _mm_or_ps(epsilons, tmp);
-						}
-						
-						tmp = _mm_mul_ps(epsilons, distances);
-						tmp = _mm_div_ps(charges, tmp);
-						phi += tmp[0];
-						phi += tmp[1];
-						phi += tmp[2];
-						phi += tmp[3];
-					}
+				for (i = 0; i < natoms4; i++) {
+				
+					__m128 xs = _mm_load_ps(atoms[i].xs);
+					__m128 ys = _mm_load_ps(atoms[i].ys);
+					__m128 zs = _mm_load_ps(atoms[i].zs);
+					__m128 charges = _mm_load_ps(atoms[i].charges);
+					__m128 distances;
 					
-					// Los restantes
-					for (; atom <= This_Structure.Residue[residue].size; atom++) {
-						
-						if (This_Structure.Residue[residue].Atom[atom].charge == 0)
-							continue;
-						
-						distance =
-						    pythagoras(This_Structure.Residue[residue].Atom[atom].coord[1], This_Structure.Residue[residue].Atom[atom].coord[2],
-							       This_Structure.Residue[residue].Atom[atom].coord[3], x_centre, y_centre, z_centre);
-						
-						if (distance < 2.0)
-							distance = 2.0;
-						
-						if (distance >= 8.0) {
-							epsilon = 80;
-						}
-						else if (distance <= 6.0) {
-							epsilon = 4;
-						}
-						else {
-							epsilon = (38 * distance) - 224;
-						}
-						
-						phi += (This_Structure.Residue[residue].Atom[atom].charge / (epsilon * distance));
-
-					}
+					// Calculo distancias (el original pythagoras)
+					__m128 diffxs = _mm_sub_ps(xs, mx_centre);
+					__m128 diffys = _mm_sub_ps(ys, my_centre);
+					__m128 diffzs = _mm_sub_ps(zs, mz_centre);
+					
+					diffxs = _mm_mul_ps(diffxs, diffxs);
+					diffys = _mm_mul_ps(diffys, diffys);
+					diffzs = _mm_mul_ps(diffzs, diffzs);
+					
+					distances = _mm_add_ps(diffxs, diffys);
+					distances = _mm_add_ps(distances, diffzs);
+					
+					distances = _mm_sqrt_ps(distances);
+					
+					// A partir de aquí implemento los if's originales usando solo máscaras de bits
+					
+					// Trunco a 2 como mínimo
+					distances = _mm_max_ps(distances, _mm_set1_ps(2.0));
+					
+					__m128 epsilons = _mm_set1_ps(0.0);
+					__m128 tmp;
+					__m128 tmp2;
+					
+					// if >= 8
+					tmp = _mm_cmpge_ps(distances, _mm_set1_ps(8.0));
+					epsilons = _mm_and_ps(tmp, _mm_set1_ps(80.0));
+					
+					// else if <= 6
+					tmp = _mm_cmple_ps(distances, _mm_set1_ps(6.0));
+					tmp = _mm_and_ps(tmp, _mm_set1_ps(4.0));
+					epsilons = _mm_or_ps(epsilons, tmp);
+					
+					// else
+					tmp = _mm_cmpgt_ps(distances, _mm_set1_ps(6.0));
+					tmp2 = _mm_cmpeq_ps(epsilons, _mm_set1_ps(0.0));
+					tmp = _mm_and_ps(tmp, tmp2);
+					tmp2 = _mm_mul_ps(distances, _mm_set1_ps(38.0));
+					tmp2 = _mm_sub_ps(tmp2, _mm_set1_ps(224.0));
+					tmp = _mm_and_ps(tmp, tmp2);
+			
+					// Valor final
+					epsilons = _mm_or_ps(epsilons, tmp);
+					
+					// Calculo las phis
+					tmp = _mm_mul_ps(epsilons, distances);
+					tmp = _mm_div_ps(charges, tmp);
+					
+					// Acumulo las phis
+					phis = _mm_add_ps(phis, tmp);
 				}
+				
+				phi += phis[0];
+				phi += phis[1];
+				phi += phis[2];
+				phi += phis[3];
 
 				grid[gaddress(x, y, z, grid_size)] = (fftw_real) phi;
 
@@ -256,6 +253,7 @@ void electric_field(struct Structure This_Structure, float grid_span, int grid_s
 
 	printf("\n");
 
+	free(atoms);
 /************/
 
 	return;
