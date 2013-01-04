@@ -166,15 +166,6 @@ struct atom_values {
 	float charges[IN_NFLOATS];
 };
 
-struct rfftw3d_create_plan_parameters {
-	rfftwnd_plan *ret;
-	int nx;
-	int ny;
-	int nz;
-	fftw_direction dir;
-	int flags;
-};
-
 /************/
 
 /* Memory allocation sizes */
@@ -205,7 +196,8 @@ extern void discretise_structure(struct Structure This_Structure, float grid_spa
 extern void surface_grid(float grid_span, int grid_size, fftw_real * grid, float surface, float internal_value);
 
 extern void assign_charges(struct Structure This_Structure);
-extern void electric_field(struct Structure This_Structure, float grid_span, int grid_size, fftw_real * grid);
+extern void electric_field_init(struct Structure This_Structure, struct atom_values **atoms_out, int *natoms_in_out, fftw_real * grid, int grid_size);
+extern void electric_field(struct Structure This_Structure, float grid_span, int grid_size, fftw_real * grid, int *shared_x, struct atom_values *atoms, int natoms_in);
 extern void electric_point_charge(struct Structure This_Structure, float grid_span, int grid_size, fftw_real * grid);
 extern void electric_field_zero_core(int grid_size, fftw_real * elec_grid, fftw_real * surface_grid, float internal_value);
 

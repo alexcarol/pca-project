@@ -476,6 +476,9 @@ int main(int argc, char *argv[])
 
 	printf("Creating plans\n");
 	
+	// Antes de nada inicializo el semáforo
+	sem_init(&num_threads_sem, 0, NTHREADS);
+	
 	struct rfftw3d_create_plan_parameters params1, params2;
 	params1.ret = &p;
 	params1.nx = global_grid_size;
@@ -493,7 +496,9 @@ int main(int argc, char *argv[])
 	
 	pthread_t t_plan1, t_plan2;
 	
+	sem_wait(&num_threads_sem);
 	pthread_create(&t_plan1, NULL, rfftw3d_create_plan_thread, &params1);
+	sem_wait(&num_threads_sem);
 	pthread_create(&t_plan2, NULL, rfftw3d_create_plan_thread, &params2);
 	
 	//p = rfftw3d_create_plan(global_grid_size, global_grid_size, global_grid_size, FFTW_REAL_TO_COMPLEX, FFTW_MEASURE | FFTW_IN_PLACE);
@@ -510,12 +515,41 @@ int main(int argc, char *argv[])
 
 	/* Calculate electic field at all grid nodes (need do only once) */
 	if (electrostatics == 1) {
-		electric_field(Origin_Static_Structure, grid_span, global_grid_size, static_elec_grid);
+		pthread_t threads[NTHREADS];
+		
+		struct atom_values *atoms;
+		int shared_x = 0, natoms_in;
+		
+		electric_field_init(Origin_Static_Structure, &atoms, &natoms_in, static_elec_grid, global_grid_size);
+		
+		struct electric_field_parameters parameters;
+		parameters.This_Structure = Origin_Static_Structure;
+		parameters.grid_span = grid_span;
+		parameters.grid_size = global_grid_size;
+		parameters.grid = static_elec_grid;
+		parameters.shared_x = &shared_x;
+		parameters.atoms = atoms;
+		parameters.natoms_in = natoms_in;
+		
+		printf("  electric field calculations ( one dot / grid sheet ) ");
+		
+		int i;
+		for (i = 0; i < NTHREADS; i++) {
+			sem_wait(&num_threads_sem);
+			pthread_create(&threads[NTHREADS], NULL, electric_field_thread, &parameters);
+		}
+		
+		for (i = 0; i < NTHREADS; i++) {
+			pthread_join(threads[NTHREADS], NULL);
+		}
+		
+		printf("\n");
+		
+		//electric_field(Origin_Static_Structure, grid_span, global_grid_size, static_elec_grid, &shared_x, atoms, natoms_in);
 		electric_field_zero_core(global_grid_size, static_elec_grid, static_grid, internal_value);
 	}
 
 	pthread_join(t_plan1, NULL);
-	pthread_join(t_plan2, NULL);
 
 	/* Fourier Transform the static grids (need do only once) */
 	printf("  one time forward FFT calculations\n");
@@ -625,7 +659,9 @@ int main(int argc, char *argv[])
 				}
 			}
 		}
-
+		
+		pthread_join(t_plan2, NULL);
+		
 		/* Reverse Fourier Transform */
 		rfftwnd_one_complex_to_real(pinv, multiple_fsg, NULL);
 		if (electrostatics == 1) {

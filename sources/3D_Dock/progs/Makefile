@@ -25,17 +25,17 @@ SHELL           = /bin/sh
 CC              = gcc
 
 # Flags for Corei7 with AVX
-CC_FLAGS        = -O3 -march=corei7-avx -DUSE_AVX -g -static
+CC_FLAGS        = -O3 -march=corei7-avx -DUSE_AVX -DNTHREADS=6 -g -static
 
 # Flags for Corei7 with SSE
-#CC_FLAGS	= -O3 -march=corei7 -g -static
+#CC_FLAGS	= -O3 -march=corei7 -DNTHREADS=6 -g -static
 
 # Flags for Core2 with SSE
-#CC_FLAGS	= -O3 -march=core2 -g -static
+#CC_FLAGS	= -O3 -march=core2 -DNTHREADS=3 -g -static
 
 STRIP           = strip
 
-CC_LINKERS      = -lm
+CC_LINKERS      = -lm -lpthread
 
 SECURITY	= chmod 555
 
@@ -64,7 +64,7 @@ all:		$(PROGRAMS)
 #############
 
 ftdock:		ftdock.o $(LIBRARY_OBJECTS) threads.o structures.h
-		$(CC) $(CC_FLAGS_FULL) -o $@ ftdock.o threads.o -lpthread $(LIBRARY_OBJECTS) $(FFTW_LINKERS) $(CC_LINKERS)
+		$(CC) $(CC_FLAGS_FULL) -o $@ ftdock.o threads.o $(LIBRARY_OBJECTS) $(FFTW_LINKERS) $(CC_LINKERS)
 #		$(STRIP) $@
 		$(SECURITY) $@
 
@@ -91,7 +91,7 @@ clean:
 
 # dependencies
 
-ftdock.o:			structures.h
+ftdock.o:			structures.h threads.h
 build.o:			structures.h
 randomspin.o:			structures.h
 
@@ -101,5 +101,5 @@ electrostatics.o:		structures.h
 grid.o:				structures.h
 manipulate_structures.o:	structures.h
 qsort_scores.o:			structures.h
-threads.o:			structures.h
+threads.o:			structures.h threads.h
 

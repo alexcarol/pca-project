@@ -35,6 +35,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #endif
 
 #include <malloc.h>
+#include <pthread.h>
 
 void assign_charges(struct Structure This_Structure)
 {
@@ -90,45 +91,11 @@ void assign_charges(struct Structure This_Structure)
 
 /************************/
 
-void electric_field(struct Structure This_Structure, float grid_span, int grid_size, fftw_real * grid)
+void electric_field_init(struct Structure This_Structure, struct atom_values **atoms_out, int *natoms_in_out, fftw_real * grid, int grid_size)
 {
-
-/************/
-
-	/* Counters */
-
-	int residue, atom;
-
-	/* Co-ordinates */
-
-	int x, y, z;
-	float x_centre, y_centre, z_centre;
-
-	/* Variables */
-
-	float distance;
-	float phi, epsilon;
-
-/************/
-
-	for (x = 0; x < grid_size; x++) {
-		for (y = 0; y < grid_size; y++) {
-			for (z = 0; z < grid_size; z++) {
-
-				grid[gaddress(x, y, z, grid_size)] = (fftw_real) 0;
-
-			}
-		}
-	}
-
-/************/
-
-	setvbuf(stdout, (char *)NULL, _IONBF, 0);
-
-	printf("  electric field calculations ( one dot / grid sheet ) ");
-	
 	// Bien, vamos a arrejuntar todo lo interesante...
-	int natoms = 0;
+	int natoms = 0, residue, atom, x, y, z;
+	
 	for (residue = 1; residue <= This_Structure.length; residue++)
 		natoms += This_Structure.Residue[residue].size;
 	
@@ -163,10 +130,58 @@ void electric_field(struct Structure This_Structure, float grid_span, int grid_s
 		atoms[i/IN_NFLOATS].charges[i%IN_NFLOATS] = 0;
 	}
 	
-	natoms_in = natoms % IN_NFLOATS == 0 ? natoms / IN_NFLOATS : natoms / IN_NFLOATS + 1;
+	*natoms_in_out = natoms % IN_NFLOATS == 0 ? natoms / IN_NFLOATS : natoms / IN_NFLOATS + 1;
+	*atoms_out = atoms;
+	
+	/************/
 
 	for (x = 0; x < grid_size; x++) {
+		for (y = 0; y < grid_size; y++) {
+			for (z = 0; z < grid_size; z++) {
 
+				grid[gaddress(x, y, z, grid_size)] = (fftw_real) 0;
+
+			}
+		}
+	}
+
+	/************/
+
+	setvbuf(stdout, (char *)NULL, _IONBF, 0);
+}
+
+pthread_mutex_t shared_x_mutex = PTHREAD_MUTEX_INITIALIZER; 
+
+void electric_field(struct Structure This_Structure, float grid_span, int grid_size, fftw_real * grid, int *shared_x, struct atom_values *atoms, int natoms_in)
+{
+
+/************/
+
+	/* Counters */
+
+	int residue, atom, i;
+
+	/* Co-ordinates */
+
+	int x, y, z;
+	float x_centre, y_centre, z_centre;
+
+	/* Variables */
+
+	float distance;
+	float phi, epsilon;
+
+	while (1) {
+		
+		pthread_mutex_lock(&shared_x_mutex);
+		x = *shared_x;
+		*shared_x = *shared_x + 1;
+		pthread_mutex_unlock(&shared_x_mutex);
+		
+		if (x >= grid_size) {
+			break;
+		}
+		
 		printf(".");
 
 		x_centre = gcentre(x, grid_span, grid_size);
@@ -266,9 +281,6 @@ void electric_field(struct Structure This_Structure, float grid_span, int grid_s
 		}
 	}
 
-	printf("\n");
-
-	free(atoms);
 /************/
 
 	return;
