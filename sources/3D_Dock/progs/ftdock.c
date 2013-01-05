@@ -485,14 +485,14 @@ int main(int argc, char *argv[])
 	params1.ny = global_grid_size;
 	params1.nz = global_grid_size;
 	params1.dir = FFTW_REAL_TO_COMPLEX;
-	params1.flags = FFTW_MEASURE | FFTW_IN_PLACE;
+	params1.flags = FFTW_MEASURE | FFTW_IN_PLACE | FFTW_THREADSAFE;
 	
 	params2.ret = &pinv;
 	params2.nx = global_grid_size;
 	params2.ny = global_grid_size;
 	params2.nz = global_grid_size;
 	params2.dir = FFTW_COMPLEX_TO_REAL;
-	params2.flags = FFTW_MEASURE | FFTW_IN_PLACE;
+	params2.flags = FFTW_MEASURE | FFTW_IN_PLACE | FFTW_THREADSAFE;
 	
 	pthread_t t_plan1, t_plan2;
 	
@@ -571,7 +571,7 @@ int main(int argc, char *argv[])
 
 		pthread_t fft2_t;
 		sem_wait(&num_threads_sem);
-		pthread_create(&fft2_t, NULL, rfftwnd_one_real_to_complex_thread, &fft_parameters1);
+		pthread_create(&fft2_t, NULL, rfftwnd_one_real_to_complex_thread, &fft_parameters2);
 		pthread_join(fft2_t, NULL);
 		//rfftwnd_one_real_to_complex(p, static_elec_grid, NULL);
 	}
