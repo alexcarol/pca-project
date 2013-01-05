@@ -476,6 +476,7 @@ int main(int argc, char *argv[])
 
 	printf("Creating plans\n");
 	
+	#if NTHREADS > 1
 	// Antes de nada inicializo el semáforo
 	sem_init(&num_threads_sem, 0, NTHREADS);
 	
@@ -501,8 +502,13 @@ int main(int argc, char *argv[])
 	sem_wait(&num_threads_sem);
 	pthread_create(&t_plan2, NULL, rfftw3d_create_plan_thread, &params2);
 	
-	//p = rfftw3d_create_plan(global_grid_size, global_grid_size, global_grid_size, FFTW_REAL_TO_COMPLEX, FFTW_MEASURE | FFTW_IN_PLACE);
-	//pinv = rfftw3d_create_plan(global_grid_size, global_grid_size, global_grid_size, FFTW_COMPLEX_TO_REAL, FFTW_MEASURE | FFTW_IN_PLACE);
+	#else
+	
+	p = rfftw3d_create_plan(global_grid_size, global_grid_size, global_grid_size, FFTW_REAL_TO_COMPLEX, FFTW_MEASURE | FFTW_IN_PLACE);
+	pinv = rfftw3d_create_plan(global_grid_size, global_grid_size, global_grid_size, FFTW_COMPLEX_TO_REAL, FFTW_MEASURE | FFTW_IN_PLACE);
+	
+	#endif
+	
 
 /************/
 
@@ -520,8 +526,11 @@ int main(int argc, char *argv[])
 		struct atom_values *atoms;
 		int shared_x = 0, natoms_in;
 		
+		printf("  electric field calculations ( one dot / grid sheet ) ");
+		
 		electric_field_init(Origin_Static_Structure, &atoms, &natoms_in, static_elec_grid, global_grid_size);
 		
+		#if NTHREADS > 1
 		struct electric_field_parameters parameters;
 		parameters.This_Structure = Origin_Static_Structure;
 		parameters.grid_span = grid_span;
@@ -530,8 +539,6 @@ int main(int argc, char *argv[])
 		parameters.shared_x = &shared_x;
 		parameters.atoms = atoms;
 		parameters.natoms_in = natoms_in;
-		
-		printf("  electric field calculations ( one dot / grid sheet ) ");
 		
 		int i;
 		for (i = 0; i < NTHREADS; i++) {
@@ -542,13 +549,15 @@ int main(int argc, char *argv[])
 		for (i = 0; i < NTHREADS; i++) {
 			pthread_join(threads[NTHREADS], NULL);
 		}
+		#else
+		electric_field(Origin_Static_Structure, grid_span, global_grid_size, static_elec_grid, &shared_x, atoms, natoms_in);
+		#endif
 		
 		printf("\n");
-		
-		//electric_field(Origin_Static_Structure, grid_span, global_grid_size, static_elec_grid, &shared_x, atoms, natoms_in);
 		electric_field_zero_core(global_grid_size, static_elec_grid, static_grid, internal_value);
 	}
 	
+	#if NTHREADS > 1
 	// Antes de hacer la fft hay que esperar a que el plan esté listo
 	pthread_join(t_plan1, NULL);
 
@@ -576,6 +585,12 @@ int main(int argc, char *argv[])
 		//rfftwnd_one_real_to_complex(p, static_elec_grid, NULL);
 	}
 	pthread_join(fft1_t, NULL);
+	#else
+	rfftwnd_one_real_to_complex(p, static_grid, NULL);
+	if (electrostatics == 1) {
+		rfftwnd_one_real_to_complex(p, static_elec_grid, NULL);
+	}
+	#endif
 
 	printf("  done\n");
 
@@ -679,8 +694,10 @@ int main(int argc, char *argv[])
 			}
 		}
 		
+		#if NTHREADS > 1
 		// Esperar a que el plan de la fft inversa esté listo
 		pthread_join(t_plan2, NULL);
+		#endif
 		
 		/* Reverse Fourier Transform */
 		rfftwnd_one_complex_to_real(pinv, multiple_fsg, NULL);
