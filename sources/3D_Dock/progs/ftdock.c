@@ -29,6 +29,16 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "structures.h"
 #include "threads.h"
 
+#include <sys/time.h>
+
+long millisecs()
+{
+	struct timeval timeval;
+	gettimeofday(&timeval, NULL);
+	
+	return timeval.tv_sec * 1000 + timeval.tv_usec / 1000;
+}
+
 void print_electric_grid(fftw_real * grid, int grid_size)
 {
 	int i, diff;
@@ -361,6 +371,8 @@ int main(int argc, char *argv[])
 
 	}
 	printf("PCA TIMING SHOULD start here\n");
+	
+	long millis = millisecs();
 
 /************/
 
@@ -636,6 +648,10 @@ int main(int argc, char *argv[])
 
 	printf("Starting main loop through the rotations\n");
 	printf("PCA TIMING SHOULD stop here\n");
+	
+	long total_time = millisecs() - millis;
+	
+	printf("Total time:%ld.%03ld\n", total_time / 1000, total_time % 1000);
 
 	/* PCA: start comment
 	   for( rotation = first_rotation ; rotation <= Angles.n ; rotation ++ ) {
